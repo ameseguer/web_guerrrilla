@@ -1,0 +1,318 @@
+openapi: "3.0.0"
+info:
+  description: "Web Guerrilla is a real time strategy game"
+  title: Web Guerrilla
+  version: 1.0.0
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  contact: 
+    email: andres.meseguer@ucr.ac.cr
+
+components:
+  parameters:
+    sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+
+  responses:
+    NotFound:
+      description: Entity not found.
+      content:
+              'application/json': {}
+    IllegalInput:
+      description: Illegal input for operation.
+      content:
+              'application/json': {}
+    GeneralError:
+      description: General Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GeneralError'
+  schemas:
+    GeneralError:
+      type: object
+      required:
+      - message
+      - code
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+          format: int32
+          minimum: 100
+          maximum: 600
+    guerrillaName:
+      type: string
+    rankingItem:
+      type: object
+      properties:
+        guerrillaName:
+          $ref: '#/components/schemas/guerrillaName'
+        rank:
+          type: integer
+          format: int32
+    resources:
+      type: object
+      properties:
+        oil:
+          type: integer
+          format: int32
+        money:
+          type: integer
+          format: int32
+        people:
+          type: integer
+          format: int32
+    buildings:
+      type: object
+      properties:
+        bunker:
+          type: integer
+          format: int32
+    army:
+      type: object
+      properties:
+        assault:
+          type: integer
+          format: int32
+        engineer:
+          type: integer
+          format: int32
+        tank:
+          type: integer
+          format: int32
+    attackResult:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/guerrillaName'
+        resources:
+          $ref: '#/components/schemas/resources'
+        buildings:
+          $ref: '#/components/schemas/buildings'
+        army:
+          $ref: '#/components/schemas/army'
+    guerrilla:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/guerrillaName'
+        email:
+          type: string
+        faction:
+          type: string
+        timestamp:
+          type: integer
+          format: int32
+        rank:
+          type: integer
+          format: int32
+        resources:
+          $ref: '#/components/schemas/resources'
+        buildings:
+          $ref: '#/components/schemas/buildings'
+        army:
+          $ref: '#/components/schemas/army'
+
+
+paths:
+  /createGuerrilla:
+    post:
+      operationId: createGuerrilla
+      summary: Create a new player profile
+      requestBody:
+        description: Player information for new guerrilla
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guerrillaName:
+                  description: The name of your new Guerrilla.
+                  type: string
+                email:
+                  description: The E-Mail address of the user to be registered.
+                  type: string
+                faction:
+                  description: The faction of the guerrilla to be registered.
+                  type: string
+              required:
+                - name
+                - email
+                - faction
+            examples:
+              examples1:
+                summary: A sample guerrilla account
+                externalValue: 'https://raw.githubusercontent.com/ameseguer/web_guerrrilla/master/examples/createguerrilla_body.json'
+      responses:
+          '200':
+            description: New guerrilla on the field
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/guerrilla'
+                examples:
+                  examples1:
+                    summary: A new account has been created
+                    externalValue: 'https://raw.githubusercontent.com/ameseguer/web_guerrrilla/master/examples/createguerrilla_response.json'
+          '400':
+            description: Bad request
+            content:
+              'application/json': {}
+  /inspectGuerrilla/{guerrillaName}:
+    get:
+      operationId: inspectGuerrilla
+      summary: Retrieve guerilla's info
+      description: Returns all the info for a single guerrilla
+      parameters: 
+      - name: guerrillaName
+        in: path
+        description: guerrillaName to search
+        required: true
+        schema:
+          type: string
+      responses:
+          '200':
+            description: Guerrilla found
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/guerrilla'
+          '400':
+            description: Bad request
+            content:
+              'application/json': {}
+          '404':
+            description: Not found
+            content:
+              'application/json': {}
+  /inspectGuerrilla/:
+    get:
+      operationId: inspectGuerrillas
+      description: Returns all the info for all the guerrillas. Please use this endpoint with care since is the equivalent of a database dump.
+      summary: Retrieve all guerillas info
+      responses:
+          '200':
+            description: Guerrillas found
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/guerrilla'
+          '400':
+            description: Bad request
+            content:
+              'application/json': {}
+          '404':
+            description: Not found
+            content:
+              'application/json': {}
+  /buyUnits/{guerrillaName}:
+    post:
+      operationId: buyUnits
+      description: Buy Guerrilla units. Returns Guerrilla status after buying the units
+      summary: Buy units
+      parameters: 
+      - name: guerrillaName
+        in: path
+        description: guerrillaName to buy units for
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: units to buy
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+              -  $ref: '#/components/schemas/army'
+              -  $ref: '#/components/schemas/buildings'
+      responses:
+          '200':
+            description: Successful transaction
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/guerrilla'
+          '400':
+            description: Bad request
+            content:
+              'application/json': {}
+          '404':
+            description: Not found
+            content:
+              'application/json': {}
+          '402':
+            description: Non-sufficient funds
+            content:
+              'application/json': {}
+  /ranking:
+    get:
+      operationId: ranking
+      description: list all Guerrillas and current ranking
+      summary: List guerrillas
+      responses:
+          '200':
+            description: List complete
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/rankingItem'
+          '400':
+            description: Bad request
+            content:
+              'application/json': {}
+          '404':
+            description: Not found
+            content:
+              'application/json': {}
+  /attack/{guerrillaTarget}:
+    post:
+      operationId: attackGuerrilla
+      summary: Attack enemy
+      description: Performs an attack attempt and returns the resulting status for both bands after the attack and the resulting losses/gains for both.
+      parameters: 
+      - name: guerrillaTarget
+        in: path
+        description: Target guerrillaName 
+        required: true
+        schema:
+          type: string
+      responses:
+          '200':
+            description: The battle is over
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    guerrillas:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/guerrilla'
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/attackResult'
+          '400':
+            description: Bad request
+            content:
+              'application/json': {}
+          '404':
+            description: Not found
+            content:
+              'application/json': {}
