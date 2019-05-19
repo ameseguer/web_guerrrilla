@@ -1,0 +1,20 @@
+{
+  "name": "praka-praka",
+  "email": "user@foo.com",
+  "faction": "MEC",
+  "timestamp": 1558280584,
+  "rank": 1,
+  "resources": {
+    "oil": 4000,
+    "money": 300,
+    "people": 3
+  },
+  "buildings": {
+    "bunker": 0
+  },
+  "army": {
+    "assault": 0,
+    "engineer": 0,
+    "tank": 0
+  }
+}
